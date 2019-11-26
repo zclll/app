@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello Qunee for HTML5</title>
+    <meta charset="utf-8">
+    <style>
+
+        *{
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .row{
+            margin: 0 auto;
+            width: 800px;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .line{
+            /* flex: 1; */
+            width: 100px;
+            background: yellowgreen;
+            /* text-align: center; */
+            text-align: center;
+            line-height: 60px;
+            height: 60px;
+        }
+
+        .active{
+            background: blue;
+        }
+
+
+        .tishi{
+            /* width: 300px; */
+            width: auto;
+            height: auto;
+            border: 2px red solid;
+            position: absolute;
+            padding: 20px 10px;
+            top: 0;
+            left: 0;
+            display: none;
+            /* transform: translate(-50%,50%); */
+        }
+        li{
+            padding: 10px 5px;
+            border: 1px solid red;
+        }
+    
+    </style>
+</head>
+<body>
+
+    <div class = 'row'>
+        <div class="line">连线模式</div>
+        <div class="line">拖拽模式</div>
+        <div class="line">画图模式</div>
+
+    </div>
+
+<div class="row">
+    <div class="line">1</div>
+    <div class="line">2</div>
+    <div class="line">3</div>
+    <div class="line">4</div>
+    <div class="line">5</div>
+    <div class="line">6</div>
+    <div class="line">7</div>
+
+</div>
+
+<div style="height: 500px;" id="canvas"></div>
+
+
+    <div class="tishi">
+        <ul>
+            <li id='5'>重命名</li>
+            <li id='0'>线条颜色</li>
+            <li id="1">线条大小</li>
+            <li id="2">线条形式</li>
+            <li id="4">删除元素</li>
+
+        </ul>
+
+    </div>
+
+
+<script src="./qunee.js"></script>
+<script>
+    var graph = new Q.Graph(canvas);
+    Q.name = '仪峰安安'
+
+    graph.enableRectangleSelectionByRightButton = true
+
+    Gevent = ''
+
+    let shapes = Q.Shapes.getAllShapes()
+    console.log(shapes)
+
+
+
+// document.getElementsByClassName('Q-Canvas')[1].style.display = 'none'
+
+
+if(!window.getI18NString){getI18NString = function(s){return s;}}
+
+
+
+let x = {}
+let y = []
+
+function createNode(name,left,top){
+    x[name]=graph.createNode(name,left,top)
+}
+
+function createEdge(from, to, type, lineWidth, color){
+    var edge = graph.createEdge(from.name + " --> " + to.name, from, to);
+    edge.setStyle(Q.Styles.EDGE_COLOR, color || "#000");
+    edge.setStyle(Q.Styles.EDGE_WIDTH, lineWidth || 2);
+    edge.edgeType = type || Q.Consts.EDGE_TYPE_DEFAULT;
+    y.push(edge)
+    return edge;
+}
+
+
+let node = document.getElementsByClassName('row')[1].getElementsByClassName('line')
+
+
+for(let i = 0; i <  node.length ;i ++){
+    node[i].onclick = function(){
+        // console.log(1)
+        createNode(`diannao${Object.keys(x).length}`,30 * i, 30 * i)
+    }
+}
+
+
+let button = document.getElementsByClassName('row')[0].getElementsByClassName('line')
+
+
+for(let i = 0;i < button.length ; i ++){
+   
+    button[i].onclick = function(){
+        for(let j of button){
+            j.classList.remove('active')
+        }
+        button[i].classList.add('active')
+
+        if(i == 0){
+            graph.interactionMode = Q.Consts.INTERACTION_MODE_CREATE_EDGE
+            // graph.interactionMode = Q.Consts.INTERACTION_MODE_CREATE_SIMPLE_EDGE ;
+        }else if( i == 1){
+            // graph.interactionMode = Q.Consts.INTERACTION_MODE_VIEW
+            graph.interactionMode = Q.Consts.INTERACTION_MODE_DEFAULT;
+        }else{
+            graph.interactionMode =Q.Consts.INTERACTION_MODE_CREATE_SHAPE
+        }
+    }
+}
+ 
+// graph.interactionMode = Q.Consts.INTERACTION_MODE_CREATE_LINE
+
+graph.onrelease2  = function(e){
+    document.getElementsByClassName('tishi')[0].style.display = 'block'
+    document.getElementsByClassName('tishi')[0].style.left = e.clientX + 1 + 'px'
+    document.getElementsByClassName('tishi')[0].style.top = e.clientY +1  +'px'
+    if(e.getData()){
+        Gevent = e
+    }else{
+        Gevent = ''
+    }
+    return false
+}
+
+document.getElementsByClassName('tishi')[0].addEventListener('click',function(evt){
+    document.getElementsByClassName('tishi')[0].style.display = 'none'
+        if(Gevent){
+            // console.log(evt.target.id)
+            let shili = Gevent.getData()
+            console.log(shili)
+
+            if(shili.$image){
+                if(evt.target.id == 4){
+                    graph.removeSelectionByInteraction(Gevent);
+                }else if(evt.target.id == 5){
+                    shili.name = prompt()
+                }else{
+                    alert('cuowu')
+                }
+            }else{
+                // Gevent.getData().edge.color = 'red'
+                console.log(shili)
+                if(evt.target.id == 0){
+                     shili.setStyle(Q.Styles.EDGE_COLOR, window.prompt())
+                }else if(evt.target.id == 1){
+                        let x =Number(window.prompt())
+                        // console.log(x)
+                    shili.setStyle(Q.Styles.EDGE_WIDTH,x);
+                }else if(evt.target.id == 3){
+                    graph.removeSelectionByInteraction(Gevent);
+                }else if(evt.target.id == 2){
+                    shili.setStyle(Q.Styles.ARROW_TO, 'star');
+                    
+                }
+              
+            }
+
+
+
+            Gevent = ''
+        }else{
+
+            return
+        }
+})
+
+
+
+
+
+
+document.oncontextmenu = function(){
+　　return false;
+}
+
+
+function addUIAt(node, ui, x, y, bindingProperty, value){
+    ui.syncSelection = false;
+    ui.zIndex = 1;
+    ui.position = {x: x, y: y};
+    ui.anchorPosition = Q.Position.LEFT_TOP;
+    ui.fontSize = 10;
+    var binding;
+    if(bindingProperty){
+        binding = {
+            property : bindingProperty,
+            propertyType : Q.Consts.PROPERTY_TYPE_CLIENT,
+            bindingProperty : "data"
+        }
+    }
+    node.addUI(ui,binding)
+    return ui;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+graph.addCustomInteraction({
+    onclick: function (type, evt, graph) {
+        document.getElementsByClassName('tishi')[0].style.display = 'none'        
+    }
+})
+
+
+
+
+
+
+// graph.addCustomInteraction({
+//     start:'',
+//     end:'',
+//     startdrag2: function(evt, graph){
+//         if(evt.getData()){
+//             this.start = evt.getData().name
+//         }
+//         return false
+//     },
+//     enddrag2:function(evt,graph){
+//         graph.enableRectangleSelectionByRightButton = true
+//         if(evt.getData()){
+//             this.end = evt.getData().name
+//             if(this.start != ''){
+//                createEdge(x[this.start],x[this.end],Q.Consts.EDGE_TYPE_VERTICAL_HORIZONTAL)
+//             }
+//         }
+//         return false
+//     },
+//     ondrag2:function(){
+//         graph.enableRectangleSelectionByRightButton = false
+//         return false
+//     }
+
+// }); 
+
+
+
+
+
+var offset = 0;
+var index = 0;
+var timer = setInterval(function(){
+    offset += -1;
+//    edge2.setStyle(Q.Styles.EDGE_LINE_DASH_OFFSET, offset);
+    // edge1.setStyle(Q.Styles.EDGE_LINE_DASH_OFFSET, offset);
+    index++;
+    index = index%20;
+    if(y[0]){
+        y[0].setStyle(Q.Styles.ARROW_TO_OFFSET, -0.3 -0.02 * (20 - index));
+    }
+    
+    // edge2.setStyle(Q.Styles.ARROW_TO_OFFSET, -0.3 -0.02 * (20 - index));
+    // edge1.setStyle(Q.Styles.ARROW_FROM_OFFSET, {x: 0.3 + 0.02 * (20 - index), y: -10});
+}, 150);
+
+function destroy(){
+    clearInterval(timer);
+}
+
+// graph.interactionMode = Q.Consts.INTERACTION_MODE_CREATE_SHAPE;
+
+// graph.ondblclick = function(evt){
+//     graph.removeSelectionByInteraction(evt);
+//     Q.eventPreventDefault(evt);
+// }
+
+
+</script>
+</body>
+</html>
